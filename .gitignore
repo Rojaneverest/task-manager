@@ -1,12 +1,38 @@
-# Environment variables
+# Docker
+docker-compose.yml
+Dockerfile
+postgres_data/
+docker-compose.override.yml
+
+# Build artifacts
+**/__pycache__/
+*.pyc
+*.pyo
+build/
+dist/
+*.egg-info/
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Environment files
 .env
+.venv/
+venv/
+env/
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# Static files collected by Django
+staticfiles/
 
 # Django stuff
 *.log
 *.pot
 *.pyc
 __pycache__/
-db.sqlite3
 /static/
 /media/
 

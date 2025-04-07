@@ -21,25 +21,13 @@ dotenv_path = BASE_DIR / '.env'
 dotenv.load_dotenv(dotenv_path=dotenv_path)
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-7pdhgz$34m=&l#(br3!lc6j41fokbjit9h6rzg!n!xczi2_i1#' # Old hardcoded key
 SECRET_KEY = os.getenv('SECRET_KEY') # Read from environment variable
 
-# Check if SECRET_KEY was loaded
-if not SECRET_KEY:
-    raise ValueError("No SECRET_KEY set for Django application. Please set it in your .env file or environment.")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# Consider using environment variable for DEBUG as well
-DEBUG = os.getenv('DEBUG', 'True') == 'True' # Default to True if not set
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# ALLOWED_HOSTS = []
-# Use environment variable for ALLOWED_HOSTS
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1').split(' ')
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1'] # Old hardcoded list
+
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -72,7 +60,7 @@ ROOT_URLCONF = 'task_manager.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -90,6 +78,33 @@ WSGI_APPLICATION = 'task_manager.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+
+DJANGO_ENV = os.getenv('DJANGO_ENV', 'docker') # Default to 'docker' if not set
+
+if DJANGO_ENV == 'local':
+    # Local development database configuration (outside Docker)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('LOCAL_DB_NAME', 'default_local_db'), # Provide a default
+            'USER': os.getenv('LOCAL_DB_USER', 'postgres'), # Provide a default
+            'PASSWORD': os.getenv('LOCAL_DB_PASSWORD', ''),
+            'HOST': os.getenv('LOCAL_DB_HOST', 'localhost'),
+            'PORT': os.getenv('LOCAL_DB_PORT', '5432'),
+        }
+    }
+else:
+    # Docker database configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'), 
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'), # Should be 'db' for Docker
+            'PORT': os.getenv('DB_PORT'), # Will be overridden to 5432 for web container
+        }
+    }
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -122,28 +137,6 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'), 
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-    }
-}
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'), # Or 'django.db.backends.mysql' etc.
-#         'NAME': os.environ.get('DB_NAME', 'postgres'),
-#         'USER': os.environ.get('DB_USER', 'postgres'),
-#         'PASSWORD': os.environ.get('DB_PASSWORD', 'root'),
-#         'HOST': os.environ.get('DB_HOST', 'db'),  # Use the service name from docker-compose.yml
-#         'PORT': os.environ.get('DB_PORT', '5432'), # Default PostgreSQL port
-#     }
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -180,11 +173,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-
-# Update this setting to point to the new location within BASE_DIR
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
-    # BASE_DIR is /app/task_manager, and the static folder is now inside it.
-    BASE_DIR / "static", 
+    BASE_DIR / "static",
 ]
 
 # Default primary key field type

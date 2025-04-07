@@ -1,21 +1,19 @@
 # tasks/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required # Import Django's login_required
+from django.contrib.auth.decorators import login_required 
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect # Removed unused HttpResponse
-from rest_framework import status, permissions, generics # generics might not be used here directly
+from django.http import HttpResponseRedirect 
+from rest_framework import status, permissions, generics 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
-from django.db.models import Q # Import Q for complex lookups
-import datetime # Import datetime for date filtering
-from rest_framework import serializers as drf_serializers # Import DRF serializers
+import datetime
+from rest_framework import serializers as drf_serializers 
 
 from .models import Task
 from .serializers import TaskSerializer, UserSerializer, UserRegistrationSerializer
 
-# --- Web Views ---
 
 @login_required
 def task_list_view(request):
@@ -25,7 +23,6 @@ def task_list_view(request):
     """
     tasks = Task.objects.filter(user=request.user).order_by('date')
     context = {'tasks': tasks}
-    # Assuming index.html is in 'tasks/templates/tasks/index.html' or similar APP_DIRS location
     return render(request, 'index.html', context)
 
 @login_required
@@ -34,18 +31,14 @@ def task_create(request):
     Handles POST requests to create a new task from the web form.
     """
     if request.method == 'POST':
-        # Using serializer with request.POST - ensure form names match serializer fields
         serializer = TaskSerializer(data=request.POST)
         if serializer.is_valid():
-            # Manually add user before saving
             serializer.save(user=request.user)
             return redirect('web-task-list')
         else:
-            # Optional: Handle serializer errors if needed, e.g., re-render form with errors
-            # For simplicity, just redirecting back
-            print(serializer.errors) # Log errors for debugging
-            return redirect('web-task-list') # Or render form again with errors
-    # Redirect if not POST
+ 
+            print(serializer.errors) 
+            return redirect('web-task-list') 
     return redirect('web-task-list')
 
 @login_required
@@ -55,16 +48,13 @@ def task_update(request, pk):
     """
     task = get_object_or_404(Task, pk=pk, user=request.user)
     if request.method == 'POST':
-        # Using serializer with request.POST
         serializer = TaskSerializer(task, data=request.POST, partial=True)
         if serializer.is_valid():
             serializer.save()
             return redirect('web-task-list')
         else:
-            # Optional: Handle errors
-            print(serializer.errors) # Log errors for debugging
-            return redirect('web-task-list') # Or render form again with errors
-    # Redirect if not POST
+            print(serializer.errors) 
+            return redirect('web-task-list') 
     return redirect('web-task-list')
 
 @login_required
@@ -73,10 +63,8 @@ def task_delete(request, pk):
     Handles POST requests to delete an existing task from the web form.
     """
     task = get_object_or_404(Task, pk=pk, user=request.user)
-    # Should ideally only delete on POST request, but template uses POST form
     if request.method == 'POST':
         task.delete()
-    # Always redirect back after attempting delete or if GET request
     return redirect('web-task-list')
 
 @login_required
@@ -86,26 +74,22 @@ def report_view(request):
     """
     tasks = Task.objects.filter(user=request.user).order_by('date')
 
-    # Get filter parameters from GET request
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
     status_filter = request.GET.get('status')
     task_name_filter = request.GET.get('task_name')
 
-    # Apply filters
     if start_date_str:
         try:
             start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
             tasks = tasks.filter(date__gte=start_date)
         except ValueError:
-            # Handle invalid date format if necessary
             pass
     if end_date_str:
         try:
             end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
             tasks = tasks.filter(date__lte=end_date)
         except ValueError:
-            # Handle invalid date format if necessary
             pass
     if status_filter and status_filter != 'all':
         tasks = tasks.filter(status=status_filter)
@@ -114,8 +98,8 @@ def report_view(request):
 
     context = {
         'tasks': tasks,
-        'statuses': Task.STATUS_CHOICES, # Pass status choices to template
-        'filters': request.GET # Pass current filters back to template to repopulate form
+        'statuses': Task.STATUS_CHOICES,
+        'filters': request.GET
     }
     return render(request, 'report.html', context)
 
@@ -133,16 +117,14 @@ def api_task_list(request):
 
     search = request.query_params.get('search', None)
     if search:
-        # Consider using Q objects for more complex searches if needed
         tasks = tasks.filter(title__icontains=search) | tasks.filter(description__icontains=search)
 
-    ordering = request.query_params.get('ordering', '-date') # Default ordering if needed
-    # Validate ordering fields if necessary
+    ordering = request.query_params.get('ordering', '-date') 
     valid_ordering_fields = ['title', '-title', 'date', '-date', 'status', '-status', 'created_at', '-created_at']
     if ordering in valid_ordering_fields:
          tasks = tasks.order_by(ordering)
     else:
-        tasks = tasks.order_by('-date') # Apply default if invalid field given
+        tasks = tasks.order_by('-date') 
 
     serializer = TaskSerializer(tasks, many=True)
     return Response(serializer.data)
@@ -181,13 +163,10 @@ def api_task_update(request, pk):
     """
     task = get_object_or_404(Task, pk=pk, user=request.user)
 
-    # Note: PUT should ideally require all fields, PATCH allows partial update.
-    # Serializer handles this distinction with partial=True for PATCH.
     partial = request.method == 'PATCH'
     serializer = TaskSerializer(task, data=request.data, partial=partial)
 
     if serializer.is_valid():
-        # User context is already part of the task object, no need to pass here
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -205,7 +184,7 @@ def api_task_delete(request, pk):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser]) # Correct permission class
+@permission_classes([IsAdminUser]) 
 def api_user_list(request):
     """
     List all users (admin only).
@@ -216,7 +195,7 @@ def api_user_list(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAdminUser]) # Correct permission class
+@permission_classes([IsAdminUser])
 def api_user_detail(request, pk):
     """
     Retrieve a user by id (admin only).
@@ -226,14 +205,13 @@ def api_user_detail(request, pk):
     return Response(serializer.data)
 
 
-# Refactored api_register_user to Class-Based View for better schema generation
 class UserRegistrationView(generics.CreateAPIView):
     """
     Register a new user.
     Provides endpoint for creating new user accounts.
     Requires username, password, and password confirmation.
     """
-    queryset = User.objects.none() # Required for CreateAPIView, but we don't query existing users here.
+    queryset = User.objects.none() 
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
