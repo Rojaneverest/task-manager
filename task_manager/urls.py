@@ -4,9 +4,10 @@ URL configuration for task_manager project.
 """
 from django.contrib import admin
 from django.urls import path, include
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+# from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 # Import views from the tasks app
 from tasks import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     # --- Web Interface URLs ---
@@ -25,30 +26,34 @@ urlpatterns = [
     # Path for handling the deletion of an existing task (POST request) -> uses views.task_delete
     path('delete/<int:pk>/', views.task_delete, name='web-task-delete'), # Matches {% url 'web-task-delete' ... %}
 
+    # Authentication URLs - Explicitly use our custom views
+    path('login/', views.login_view, name='web-login'),
+    path('register/', views.register_view, name='web-register'),
+    path('logout/', views.logout_view, name='web-logout'),
 
     # --- Admin Site ---
     path('admin/', admin.site.urls),
 
 
     # --- API URLs (Map to the corresponding functions in tasks.views) ---
-    path('api/tasks/', views.api_task_list, name='api-task-list'),
-    path('api/tasks/create/', views.api_task_create, name='api-task-create'),
-    path('api/tasks/<int:pk>/', views.api_task_detail, name='api-task-detail'),
-    path('api/tasks/<int:pk>/update/', views.api_task_update, name='api-task-update'),
-    path('api/tasks/<int:pk>/delete/', views.api_task_delete, name='api-task-delete'),
+    # path('api/tasks/', views.api_task_list, name='api-task-list'),
+    # path('api/tasks/create/', views.api_task_create, name='api-task-create'),
+    # path('api/tasks/<int:pk>/', views.api_task_detail, name='api-task-detail'),
+    # path('api/tasks/<int:pk>/update/', views.api_task_update, name='api-task-update'),
+    # path('api/tasks/<int:pk>/delete/', views.api_task_delete, name='api-task-delete'),
 
-    path('api/users/', views.api_user_list, name='api-user-list'),
-    path('api/users/<int:pk>/', views.api_user_detail, name='api-user-detail'),
+    # path('api/users/', views.api_user_list, name='api-user-list'),
+    # path('api/users/<int:pk>/', views.api_user_detail, name='api-user-detail'),
 
-    path('api/register/', views.UserRegistrationView.as_view(), name='api-register'),
+    # path('api/register/', views.UserRegistrationView.as_view(), name='api-register'),
 
 
     # --- DRF Auth & Schema ---
-    # Includes login/logout views for browsable API and session auth
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Includes login/logout views for browsable API and session auth (only for API)
+    # path('api/auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Swagger UI endpoint
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 
 ]
 

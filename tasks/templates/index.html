@@ -109,14 +109,9 @@
 
                 <span class="text-muted me-3">Logged in as: {{ request.user.username }}</span>
 
-                <form method="post" action="/api-auth/logout/" class="d-inline">
-
+                <form method="post" action="{% url 'web-logout' %}" class="d-inline">
                     {% csrf_token %}
-
-                    <input type="hidden" name="next" value="/api-auth/login/">
-
                     <button type="submit" class="btn btn-danger btn-sm">Logout</button>
-
                 </form>
 
             </div>
