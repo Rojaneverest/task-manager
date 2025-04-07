@@ -1,0 +1,491 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Task Manager</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bs-primary-rgb: 10, 77, 104; /* #0A4D68 */
+            --bs-secondary-rgb: 108, 117, 125; /* #6c757d */
+            --bs-success-rgb: 60, 118, 61; /* #3c763d - Dark Green for Completed Header */
+            --bs-info-rgb: 8, 131, 149; /* #088395 - Teal Accent */
+            --bs-warning-rgb: 138, 109, 59; /* #8a6d3b - Dark Amber for In Progress Header */
+            --bs-danger-rgb: 169, 68, 66; /* #A94442 - Dark Red for Pending Header */
+            --bs-light-rgb: 248, 249, 250; /* #F8F9FA */
+            --bs-dark-rgb: 33, 37, 41; /* #212529 */
+        }
+
+        body {
+            background-color: #F8F9FA; /* Lighter background */
+            font-family: 'Lato', sans-serif;
+            color: #212529;
+        }
+
+        h1, h5 {
+            font-weight: 700; /* Bolder headings */
+        }
+
+        .card {
+            border: none; /* Remove default border */
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Subtle shadow */
+            margin-bottom: 1.5rem; /* Consistent bottom margin for cards */
+        }
+
+        .card-header {
+             padding: 1rem 1.25rem; /* Increased header padding */
+             border-bottom: 1px solid rgba(0,0,0,.075);
+        }
+
+        .task-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid #dee2e6;
+        }
+
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .column-container {
+            min-height: 450px;
+             background-color: #FFFFFF;
+             border: none;
+             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .column-container .card-header {
+            color: #FFFFFF; /* White text for colored headers */
+        }
+
+        .header-section {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #dee2e6; /* Separator line */
+            margin-bottom: 2rem;
+        }
+
+        /* Override button colors to use the palette */
+        .btn-primary { background-color: #0A4D68; border-color: #0A4D68; }
+        .btn-primary:hover { background-color: #083a53; border-color: #073247; }
+        .btn-info { background-color: #088395; border-color: #088395; color: #FFFFFF;}
+        .btn-info:hover { background-color: #066a7a; border-color: #055c6a; color: #FFFFFF; }
+
+        /* Status header specific colors */
+        .bg-status-pending { background-color: #A94442; } /* Dark Red */
+        .bg-status-inprogress { background-color: #c2a957; } /* Dark Amber */
+        .bg-status-completed { background-color: #3c763d; } /* Dark Green */
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container mt-4">
+
+        <div class="header-section d-flex justify-content-between align-items-center">
+
+            <h1>Task Manager</h1>
+
+            <div class="user-info d-flex align-items-center">
+
+                <a href="{% url 'web-report' %}" class="btn btn-info btn-sm me-3">View Report</a>
+
+                <span class="text-muted me-3">Logged in as: {{ request.user.username }}</span>
+
+                <form method="post" action="/api-auth/logout/" class="d-inline">
+
+                    {% csrf_token %}
+
+                    <input type="hidden" name="next" value="/api-auth/login/">
+
+                    <button type="submit" class="btn btn-danger btn-sm">Logout</button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <div class="card bg-white mb-4">
+
+            <div class="card-header bg-light">
+
+                <h5 id="form-title">Add New Task</h5>
+
+            </div>
+
+            <div class="card-body p-4">
+
+                <form id="task-form" method="post" action="{% url 'web-task-create' %}">
+
+                    {% csrf_token %}
+
+                    <input type="hidden" id="task-id" name="task_id">
+
+
+                    <div class="mb-3">
+
+                        <label for="title" class="form-label">Task Title</label>
+
+                        <input type="text" class="form-control" id="title" name="title" required>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label for="description" class="form-label">Description</label>
+
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+
+                    </div>
+
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+
+                             <label for="date" class="form-label">Due Date</label>
+
+                             <input type="date" class="form-control" id="date" name="date" required>
+
+                        </div>
+
+                         <div class="col-md-6">
+
+                            <label for="status" class="form-label">Status</label>
+
+                            <select class="form-select" id="status" name="status">
+
+                                <option value="pending">Pending</option>
+
+                                <option value="in_progress">In Progress</option>
+
+                                <option value="completed">Completed</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-flex">
+
+                        <button type="submit" class="btn btn-primary me-2">Save Task</button>
+
+                        <button type="button" id="cancel-edit" class="btn btn-secondary d-none">Cancel</button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <div class="row">
+
+            <div class="col-lg-4 mb-4">
+
+                <div class="card column-container">
+
+                    <div class="card-header bg-status-pending">
+
+                        <h5 class="mb-0">Pending</h5>
+
+                    </div>
+
+                    <div class="card-body p-3" id="pending-tasks">
+
+                        {% for task in tasks %}
+
+                        {% if task.status == 'pending' %}
+
+                        <div class="card task-card mb-3" data-id="{{ task.id }}" data-title="{{ task.title }}"
+                            data-description="{{ task.description }}" data-date="{{ task.date }}"
+                            data-status="{{ task.status }}">
+
+                            <div class="card-body p-3">
+
+                                <h6 class="card-title fw-bold">{{ task.title }}</h6>
+
+                                <p class="card-text small mb-2">{{ task.description|default:""|truncatechars:100 }}</p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <small class="text-muted">Due: {{ task.date }}</small>
+
+                                    <div class="task-actions">
+
+                                        <button class="btn btn-sm btn-info edit-task me-1">Edit</button>
+
+                                        <form method="post" action="{% url 'web-task-delete' task.id %}" class="d-inline">
+
+                                            {% csrf_token %}
+
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {% endif %}
+
+                        {% empty %}
+
+                        <p class="text-center text-muted mt-3">No pending tasks.</p>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-lg-4 mb-4">
+
+                <div class="card column-container">
+
+                    <div class="card-header bg-status-inprogress">
+
+                        <h5 class="mb-0">In Progress</h5>
+
+                    </div>
+
+                    <div class="card-body p-3" id="in-progress-tasks">
+
+                         {% for task in tasks %}
+
+                        {% if task.status == 'in_progress' %}
+
+                        <div class="card task-card mb-3" data-id="{{ task.id }}" data-title="{{ task.title }}"
+                            data-description="{{ task.description }}" data-date="{{ task.date }}"
+                            data-status="{{ task.status }}">
+
+                            <div class="card-body p-3">
+
+                                <h6 class="card-title fw-bold">{{ task.title }}</h6>
+
+                                <p class="card-text small mb-2">{{ task.description|default:""|truncatechars:100 }}</p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <small class="text-muted">Due: {{ task.date }}</small>
+
+                                    <div class="task-actions">
+
+                                        <button class="btn btn-sm btn-info edit-task me-1">Edit</button>
+
+                                        <form method="post" action="{% url 'web-task-delete' task.id %}" class="d-inline">
+
+                                            {% csrf_token %}
+
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {% endif %}
+
+                         {% empty %}
+
+                         <p class="text-center text-muted mt-3">No tasks in progress.</p>
+
+                         {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-lg-4 mb-4">
+
+                <div class="card column-container">
+
+                    <div class="card-header bg-status-completed">
+
+                        <h5 class="mb-0">Completed</h5>
+
+                    </div>
+
+                    <div class="card-body p-3" id="completed-tasks">
+
+                         {% for task in tasks %}
+
+                        {% if task.status == 'completed' %}
+
+                        <div class="card task-card mb-3" data-id="{{ task.id }}" data-title="{{ task.title }}"
+                            data-description="{{ task.description }}" data-date="{{ task.date }}"
+                            data-status="{{ task.status }}">
+
+                            <div class="card-body p-3">
+
+                                <h6 class="card-title fw-bold">{{ task.title }}</h6>
+
+                                <p class="card-text small mb-2">{{ task.description|default:""|truncatechars:100 }}</p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <small class="text-muted">Due: {{ task.date }}</small>
+
+                                    <div class="task-actions">
+
+                                        <button class="btn btn-sm btn-info edit-task me-1">Edit</button>
+
+                                        <form method="post" action="{% url 'web-task-delete' task.id %}" class="d-inline">
+
+                                            {% csrf_token %}
+
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {% endif %}
+
+                         {% empty %}
+
+                         <p class="text-center text-muted mt-3">No completed tasks.</p>
+
+                         {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Edit task functionality
+
+            document.querySelectorAll('.edit-task').forEach(button => {
+
+                button.addEventListener('click', function () {
+
+                    const taskCard = this.closest('.task-card');
+
+                    const taskId = taskCard.dataset.id;
+
+                    const title = taskCard.dataset.title;
+
+                    const description = taskCard.dataset.description;
+
+                    const date = taskCard.dataset.date;
+
+                    const status = taskCard.dataset.status;
+
+
+                    // Fill the form with task data
+
+                    document.getElementById('task-id').value = taskId;
+
+                    document.getElementById('title').value = title;
+
+                    document.getElementById('description').value = description;
+
+                    document.getElementById('date').value = date;
+
+                    document.getElementById('status').value = status;
+
+
+                    // Update form title and action
+
+                    document.getElementById('form-title').textContent = 'Edit Task';
+
+                    document.getElementById('task-form').action = "{% url 'web-task-update' 0 %}".replace('0', taskId);
+
+
+                    // Show cancel button
+
+                    document.getElementById('cancel-edit').classList.remove('d-none');
+
+
+                    // Scroll to form
+
+                    document.getElementById('task-form').scrollIntoView({ behavior: 'smooth' });
+
+                });
+
+            });
+
+
+            // Cancel edit functionality
+
+            document.getElementById('cancel-edit').addEventListener('click', function () {
+
+                // Reset form
+
+                document.getElementById('task-form').reset();
+
+                document.getElementById('task-id').value = '';
+
+                document.getElementById('form-title').textContent = 'Add New Task';
+
+                document.getElementById('task-form').action = "{% url 'web-task-create' %}";
+
+                this.classList.add('d-none');
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>
