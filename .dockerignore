@@ -73,8 +73,7 @@ venv.bak/
 
 # Docker
 .dockerignore
-Dockerfile
-docker-compose.yml
+
 
 # Optional files
 .mypy_cache/

@@ -7,68 +7,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Reusing the same color palette and base styles from index.html */
-        :root {
-            --bs-primary-rgb: 10, 77, 104; /* #0A4D68 */
-            --bs-secondary-rgb: 108, 117, 125; /* #6c757d */
-            --bs-success-rgb: 60, 118, 61; 
-            --bs-info-rgb: 8, 131, 149; /* #088395 - Teal Accent */
-            --bs-warning-rgb: 138, 109, 59; 
-            --bs-danger-rgb: 169, 68, 66; 
-            --bs-light-rgb: 248, 249, 250; /* #F8F9FA */
-            --bs-dark-rgb: 33, 37, 41; /* #212529 */
-        }
-
         body {
-            background-color: #F8F9FA; 
-            font-family: 'Lato', sans-serif;
-            color: #212529;
+            background-color: #f8f9fa;
+            font-family: system-ui, -apple-system, sans-serif;
         }
-
-        h1, h5 {
-            font-weight: 700; 
-        }
-
-        .card {
-            border: none; 
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); 
-            margin-bottom: 1.5rem; 
-        }
-
-        .card-header {
-             padding: 1rem 1.25rem; 
-             border-bottom: 1px solid rgba(0,0,0,.075);
-        }
-
-        .header-section {
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #dee2e6; 
-            margin-bottom: 2rem;
-        }
-
-        .btn-primary { background-color: #0A4D68; border-color: #0A4D68; }
-        .btn-primary:hover { background-color: #083a53; border-color: #073247; }
-        .btn-info { background-color: #088395; border-color: #088395; color: #FFFFFF;}
-        .btn-info:hover { background-color: #066a7a; border-color: #055c6a; color: #FFFFFF; }
         
-        /* Specific for report table */
+        .card {
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
         .table thead th {
-            background-color: #e9ecef; /* Slightly darker header for table */
-            font-weight: 700;
+            background-color: #f8f9fa;
         }
     </style>
 </head>
 <body>
     <div class="container mt-4">
-        <div class="header-section d-flex justify-content-between align-items-center">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
             <h1>Task Report</h1>
-            <div class="user-info d-flex align-items-center">
-                 <a href="{% url 'web-task-list' %}" class="btn btn-secondary btn-sm me-3">Back to Tasks</a>
-                <span class="text-muted me-3">Logged in as: {{ request.user.username }}</span>
+            <div class="d-flex align-items-center">
+                <a href="{% url 'web-task-list' %}" class="btn btn-secondary btn-sm me-3">Back to Tasks</a>
+                <span class="text-muted me-3">{{ request.user.username }}</span>
                 <form method="post" action="{% url 'web-logout' %}" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger btn-sm">Logout</button>
@@ -77,23 +39,23 @@
         </div>
 
         <!-- Filter Form -->
-        <div class="card bg-white mb-4">
+        <div class="card mb-4">
             <div class="card-header bg-light">
-                <h5>Filter Report</h5>
+                <h5 class="mb-0">Filter Report</h5>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body">
                 <form method="get" action="{% url 'web-report' %}" class="row g-3 align-items-end">
                     <div class="col-md-3">
                         <label for="start_date" class="form-label">Start Date</label>
-                        <input type="date" class="form-control form-control-sm" id="start_date" name="start_date" value="{{ filters.start_date|default:'' }}">
+                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ filters.start_date|default:'' }}">
                     </div>
                     <div class="col-md-3">
                         <label for="end_date" class="form-label">End Date</label>
-                        <input type="date" class="form-control form-control-sm" id="end_date" name="end_date" value="{{ filters.end_date|default:'' }}">
+                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ filters.end_date|default:'' }}">
                     </div>
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
-                        <select class="form-select form-select-sm" id="status" name="status">
+                        <select class="form-select" id="status" name="status">
                             <option value="all" {% if filters.status == 'all' or not filters.status %}selected{% endif %}>All Statuses</option>
                             {% for value, display in statuses %}
                             <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ display }}</option>
@@ -102,39 +64,40 @@
                     </div>
                     <div class="col-md-2">
                         <label for="task_name" class="form-label">Task Name</label>
-                        <input type="text" class="form-control form-control-sm" id="task_name" name="task_name" placeholder="contains..." value="{{ filters.task_name|default:'' }}">
+                        <input type="text" class="form-control" id="task_name" name="task_name" placeholder="Contains..." value="{{ filters.task_name|default:'' }}">
                     </div>
                     <div class="col-md-1">
-                        <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Report Results -->
-        <div class="card bg-white">
-            <div class="card-header bg-light">
-                <h5>Results <span class="badge bg-secondary fw-normal ms-2">{{ tasks.count }} Task{{ tasks.count|pluralize }}</span></h5>
+        <div class="card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Results</h5>
+                <span class="badge bg-secondary">{{ tasks.count }} Task{{ tasks.count|pluralize }}</span>
             </div>
-            <div class="card-body p-0"> {# Remove padding for table to touch edges #}
+            <div class="card-body p-0">
                 {% if tasks %}
-                <div class="table-responsive"> {# Make table responsive #}
-                    <table class="table table-striped table-hover mb-0"> {# Remove bottom margin #}
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
                         <thead>
                             <tr>
-                                <th scope="col" class="ps-4">Title</th> {# Add padding start #}
-                                <th scope="col">Description</th>
-                                <th scope="col">Due Date</th>
-                                <th scope="col" class="pe-4">Status</th> {# Add padding end #}
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for task in tasks %}
                             <tr>
-                                <td class="ps-4">{{ task.title }}</td>
+                                <td>{{ task.title }}</td>
                                 <td>{{ task.description|default:"-"|truncatechars:80 }}</td>
                                 <td>{{ task.date }}</td>
-                                <td class="pe-4">{{ task.get_status_display }}</td>
+                                <td>{{ task.get_status_display }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

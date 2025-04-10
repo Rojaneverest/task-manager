@@ -125,11 +125,7 @@ def register_view(request):
     return render(request, 'register.html', {'form': form})
 
 def login_view(request):
-    storage = messages.get_messages(request)
-    for message in list(storage):
-        if message.tags != 'error':
-            storage.used = True
-            
+
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -138,7 +134,6 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                # Redirect to the next page or default to task list
                 next_url = request.POST.get('next') or request.GET.get('next') or 'web-task-list'
                 return redirect(next_url)
             else:

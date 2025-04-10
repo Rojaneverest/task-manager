@@ -3,20 +3,20 @@ attrs==25.3.0
 Django==5.1.7
 django-cors-headers==4.7.0
 django-crispy-forms==2.3
-django-filter==25.1
-djangorestframework==3.16.0
-drf-spectacular==0.28.0
-drf-yasg==1.21.10
-inflection==0.5.1
-jsonschema==4.23.0
-jsonschema-specifications==2024.10.1
+# django-filter==25.1  # DRF-related filter backend
+# djangorestframework==3.16.0  # DRF itself
+# drf-spectacular==0.28.0  # DRF schema generation
+# drf-yasg==1.21.10  # Another DRF schema tool
+# inflection==0.5.1  # Used by DRF-related packages
+# jsonschema==4.23.0  # Used by DRF-related packages
+# jsonschema-specifications==2024.10.1  # Used by DRF-related packages
 packaging==24.2
 psycopg2-binary==2.9.10
 python-dotenv==1.1.0
 pytz==2025.2
-PyYAML==6.0.2
-referencing==0.36.2
-rpds-py==0.24.0
+# PyYAML==6.0.2  # Used by DRF schema generation
+# referencing==0.36.2  # Used by jsonschema
+# rpds-py==0.24.0  # Used by jsonschema
 sqlparse==0.5.3
-uritemplate==4.1.1
+# uritemplate==4.1.1  # Used by DRF schema generation
 gunicorn

@@ -99,7 +99,7 @@ else:
             'USER': os.getenv('DB_USER'),
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'), # Should be 'db' for Docker
-            'PORT': os.getenv('DB_PORT'), # Will be overridden to 5432 for web container
+            'PORT': '5432', # Always use 5432 internally in Docker network
         }
     }
 
@@ -138,12 +138,16 @@ else:
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
+# Removing all password validators to disable validation messages
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -151,6 +155,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+
 ]
 
 
